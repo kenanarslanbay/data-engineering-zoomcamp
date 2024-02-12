@@ -12,7 +12,10 @@ By this stage of the course you should have already:
   * fhv data - Year 2019. 
 
 > [!NOTE]  
-> * A quick hack has been shared to load that data quicker, check instructions in [week3/extras](../03-data-warehouse/extras)
+> * A quick hack has been shared to load that data quicker, check instructions in [week3/extras](../03-data-warehouse/extras) 
+>*  You may follow up this video for loading data to BigQuery:
+> 
+>[![](https://markdown-videos-api.jorgenkh.no/youtube/Mork172sK_c)](https://www.youtube.com/watch?v=Mork172sK_c&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb&index=50)
 
 > [!TIP] 
 >* If you recieve an error stating "Permission denied while globbing file pattern." when attempting to run `fact_trips.sql` this video may be helpful in resolving the issue
