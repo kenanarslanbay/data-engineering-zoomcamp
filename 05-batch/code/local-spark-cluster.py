@@ -1,11 +1,7 @@
-#!/usr/bin/env python
-# coding: utf-8
-
 import argparse
 
 import pyspark
 from pyspark.sql import SparkSession
-from pyspark.sql import functions as F
 
 
 parser = argparse.ArgumentParser()
@@ -20,18 +16,20 @@ input_green = args.input_green
 input_yellow = args.input_yellow
 output = args.output
 
-
 spark = SparkSession.builder \
     .appName('test') \
     .getOrCreate()
+    
+## .master("spark://data-engineering-zoomcamp.europe-west1-b.c.semiotic-pager-411512.internal:7077") \
 
-spark.conf.set('temporaryGcsBucket', 'dataproc-temp-europe-west1-1018608247307-nzhsmndm')
 
 df_green = spark.read.parquet(input_green)
+
 
 df_green = df_green \
     .withColumnRenamed('lpep_pickup_datetime', 'pickup_datetime') \
     .withColumnRenamed('lpep_dropoff_datetime', 'dropoff_datetime')
+
 
 df_yellow = spark.read.parquet(input_yellow)
 
@@ -41,26 +39,30 @@ df_yellow = df_yellow \
     .withColumnRenamed('tpep_dropoff_datetime', 'dropoff_datetime')
 
 
+
+from pyspark.sql import functions as F
+
 common_colums = [
-    'VendorID',
-    'pickup_datetime',
-    'dropoff_datetime',
-    'store_and_fwd_flag',
-    'RatecodeID',
-    'PULocationID',
-    'DOLocationID',
-    'passenger_count',
-    'trip_distance',
-    'fare_amount',
-    'extra',
-    'mta_tax',
-    'tip_amount',
-    'tolls_amount',
-    'improvement_surcharge',
-    'total_amount',
-    'payment_type',
-    'congestion_surcharge'
+'VendorID',
+ 'pickup_datetime',
+ 'dropoff_datetime',
+ 'store_and_fwd_flag',
+ 'RatecodeID',
+ 'PULocationID',
+ 'DOLocationID',
+ 'passenger_count',
+ 'trip_distance',
+ 'fare_amount',
+ 'extra',
+ 'mta_tax',
+ 'tip_amount',
+ 'tolls_amount',
+ 'improvement_surcharge',
+ 'total_amount',
+ 'payment_type',
+ 'congestion_surcharge'
 ]
+
 
 
 
@@ -68,14 +70,24 @@ df_green_sel = df_green \
     .select(common_colums) \
     .withColumn('service_type', F.lit('green'))
 
+
+
+
 df_yellow_sel = df_yellow \
     .select(common_colums) \
     .withColumn('service_type', F.lit('yellow'))
 
 
+
+
 df_trips_data = df_green_sel.unionAll(df_yellow_sel)
 
-df_trips_data.registerTempTable('trips_data')
+
+df_trips_data.groupBy('service_type').count().show()
+
+
+
+df_trips_data.createOrReplaceTempView('trips_data')
 
 
 df_result = spark.sql("""
@@ -105,10 +117,10 @@ GROUP BY
 """)
 
 
-df_result.write.format('bigquery') \
-    .option('table', output) \
-    .save()
-    
+df_result.coalesce(1).write.parquet(output, mode='overwrite')
+
+
+
 
 
 
